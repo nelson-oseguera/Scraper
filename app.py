@@ -85,7 +85,9 @@ def scrape_pricecharting_by_upc(upc):
     browser.quit()
 
     page_title = soup.title.string if soup.title else ""
-    match = re.search(r'(.+)\s+\((.+)\) Prices', page_title)
+    print("Page Title:", page_title)
+
+    match = re.search(r'(.+?)\s*\((.+?)\)', page_title)
     title = match.group(1).strip() if match else "Unknown"
     platform = match.group(2).strip() if match else "Unknown"
 
