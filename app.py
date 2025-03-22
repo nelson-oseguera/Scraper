@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import time
 import re
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 
 app = Flask(__name__)
@@ -12,9 +12,13 @@ def scrape_pricecharting(title, platform):
     formatted_platform = platform.lower().replace(" ", "-")
     url = f"https://www.pricecharting.com/game/{formatted_platform}/{formatted_title}"
 
-    options = Options()
-    options.headless = True
-    browser = webdriver.Firefox(options=options)
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+
+    browser = webdriver.Chrome(options=chrome_options)
     browser.get(url)
     time.sleep(3)
 
