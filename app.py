@@ -15,7 +15,7 @@ def configure_browser():
     chrome_options.add_argument("--disable-gpu")
     return webdriver.Chrome(options=chrome_options)
 
-def extract_price(price_id):
+def extract_price(soup, price_id):
     price_element = soup.select_one(f'td#{price_id} .js-price')
     if price_element:
         price_text = price_element.text.strip().replace('$', '').replace(',', '')
@@ -84,7 +84,6 @@ def scrape_pricecharting_by_upc(upc):
     soup = BeautifulSoup(browser.page_source, 'html.parser')
     browser.quit()
 
-    # Extract title/platform from page title
     page_title = soup.title.string if soup.title else ""
     match = re.search(r'(.+)\s+\((.+)\) Prices', page_title)
     title = match.group(1).strip() if match else "Unknown"
