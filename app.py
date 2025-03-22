@@ -84,10 +84,10 @@ def scrape_pricecharting_by_upc(upc):
     soup = BeautifulSoup(browser.page_source, 'html.parser')
     browser.quit()
 
+    # ✅ Correctly parse: Super Mario 64 Prices | Nintendo 64
     page_title = soup.title.string if soup.title else ""
     print("Page Title:", page_title)
-
-    match = re.search(r'(.+?)\s*\((.+?)\)', page_title)
+    match = re.search(r'^(.*?)\s+Prices\s+\|\s+(.*)$', page_title)
     title = match.group(1).strip() if match else "Unknown"
     platform = match.group(2).strip() if match else "Unknown"
 
