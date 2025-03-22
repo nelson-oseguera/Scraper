@@ -39,15 +39,17 @@ def extract_game_data(soup):
         if upc_value:
             upc = upc_value.text.strip()
 
-    # ✅ Extract title and platform from the known structure
-    title_tag = soup.find("h1", id="product_name")
-    console_tag = soup.select_one("a[href^='/console/']")
+    # 🧼 Fix title: strip platform out of it
+    raw_title = soup.find("h1", id="product_name")
+    title_text = raw_title.text.strip() if raw_title else "Unknown"
+    title_text = re.sub(r"\s+\n\s+.+", "", title_text).strip()
 
-    title = title_tag.text.strip() if title_tag else "Unknown"
-    platform = console_tag.text.strip() if console_tag else "Unknown"
+    # 🎯 Fix platform: get it from the console href tag
+    platform_tag = soup.select_one("a[href^='/console/']")
+    platform = platform_tag.text.strip() if platform_tag else "Unknown"
 
     return {
-        "title": title,
+        "title": title_text,
         "platform": platform,
         "loose_price": loose_price,
         "complete_price": complete_price,
