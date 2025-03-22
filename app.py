@@ -15,11 +15,13 @@ def configure_browser():
     chrome_options.add_argument("--disable-gpu")
     return webdriver.Chrome(options=chrome_options)
 
-def extract_price(soup, price_id):
+def extract_price(price_id):
     price_element = soup.select_one(f'td#{price_id} .js-price')
     if price_element:
         price_text = price_element.text.strip().replace('$', '').replace(',', '')
-        return float(price_text) if price_text else 0.0
+        if price_text == "-" or not price_text.replace('.', '', 1).isdigit():
+            return 0.0
+        return float(price_text)
     return 0.0
 
 def scrape_pricecharting(title, platform):
