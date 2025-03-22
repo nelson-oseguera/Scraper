@@ -72,22 +72,42 @@ def scrape_pricecharting_by_upc(upc):
     time.sleep(3)
 
     soup = BeautifulSoup(browser.page_source, 'html.parser')
-    link_tag = soup.select_one("a[href*='/game/']")
-    if not link_tag:
-        browser.quit()
-        return {"error": "No game found for this UPC."}
+    browser.quit()
 
-    game_url = "https://www.pricecharting.com" + link_tag["href"]
-    browser.get(game_url)
+    # Step 1: Look through all rows in the search results
+    rows = soup.select("table#products_table tr")
+
+    exact_link = None
+
+    for row in rows:
+        upc_cell = row.find("td", string="UPC:")
+        if upc_cell:
+            upc_value_cell = upc_cell.find_next_sibling("td")
+            if upc_value_cell and upc_value_cell.text.strip() == upc:
+                link = row.find("a", href=True)
+                if link:
+                    exact_link = "https://www.pricecharting.com" + link["href"]
+                    break
+
+        # Alternate check: Sometimes UPC is inside the link's data-upc attribute (less common)
+        link_tag = row.find("a", href=True)
+        if link_tag and upc in link_tag.get("href", ""):
+            exact_link = "https://www.pricecharting.com" + link_tag["href"]
+            break
+
+    if not exact_link:
+        return {"error": f"No exact game match found for UPC {upc}"}
+
+    # Step 2: Load the exact matching game page
+    browser = configure_browser()
+    browser.get(exact_link)
     time.sleep(3)
-
     soup = BeautifulSoup(browser.page_source, 'html.parser')
     browser.quit()
 
-    # ✅ Correctly parse: Super Mario 64 Prices | Nintendo 64
+    # Step 3: Parse details like title, platform, and prices
     page_title = soup.title.string if soup.title else ""
-    print("Page Title:", page_title)
-    match = re.search(r'^(.*?)\s+Prices\s+\|\s+(.*)$', page_title)
+    match = re.search(r'^(.*?)\s+Prices\s+(.*?)\s+\|', page_title)
     title = match.group(1).strip() if match else "Unknown"
     platform = match.group(2).strip() if match else "Unknown"
 
